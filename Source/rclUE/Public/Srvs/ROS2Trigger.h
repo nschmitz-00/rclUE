@@ -7,7 +7,8 @@
 #include "CoreMinimal.h"
 
 // ROS
-#include "example_interfaces/srv/trigger.h"
+#include "std_srvs/srv/trigger.h"
+//#include "example_interfaces/srv/trigger.h"
 
 // rclUE
 #include "Srvs/ROS2GenericSrv.h"
@@ -36,12 +37,12 @@ public:
 		
 	}
 
-	void SetFromROS2(const example_interfaces__srv__Trigger_Request& in_ros_data)
+	void SetFromROS2(const std_srvs__srv__Trigger_Request& in_ros_data)
 	{
     	
 	}
 
-	void SetROS2(example_interfaces__srv__Trigger_Request& out_ros_data) const
+	void SetROS2(std_srvs__srv__Trigger_Request& out_ros_data) const
 	{
     	
 	}
@@ -68,7 +69,7 @@ public:
 		
 	}
 
-	void SetFromROS2(const example_interfaces__srv__Trigger_Response& in_ros_data)
+	void SetFromROS2(const std_srvs__srv__Trigger_Response& in_ros_data)
 	{
     	bSuccess = in_ros_data.success;
 
@@ -77,7 +78,7 @@ public:
 		
 	}
 
-	void SetROS2(example_interfaces__srv__Trigger_Response& out_ros_data) const
+	void SetROS2(std_srvs__srv__Trigger_Response& out_ros_data) const
 	{
     	out_ros_data.success = bSuccess;
 
@@ -127,6 +128,6 @@ private:
 	virtual FString SrvRequestToString() const override;
 	virtual FString SrvResponseToString() const override;
 
-	example_interfaces__srv__Trigger_Request Trigger_req;
-	example_interfaces__srv__Trigger_Response Trigger_res;
+	std_srvs__srv__Trigger_Request Trigger_req;
+	std_srvs__srv__Trigger_Response Trigger_res;
 };

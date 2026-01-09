@@ -17,7 +17,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UObject/Object.h"
-#include "Misc/EngineVersionComparison.h" 
+#include "Misc/EngineVersionComparison.h"
 
 #if UE_VERSION_NEWER_THAN(5, 5, 0)
 #include "Misc/App.h"
@@ -49,8 +49,8 @@ static TAutoConsoleVariable<int32> CVarRclUERcsSoftCheck(
     TEXT("RCLUE.RCSOFTCHECK"),
     0,
     TEXT("Exit UE with rcl function error or not.\n")
-        TEXT("<=0: Continue without exiting UE even with rcl functions return error code.")
-            TEXT("  1: Exit UE with rcl functions error code.)\n"),
+    TEXT("<=0: Continue without exiting UE even with rcl functions return error code.")
+    TEXT("  1: Exit UE with rcl functions error code.)\n"),
     ECVF_Scalability | ECVF_RenderThreadSafe);
 
 //! this macro can be used on rcl functions that return an error code
@@ -102,6 +102,8 @@ enum class UROS2QoS : uint8
     ParameterEvents UMETA(DisplayName = "ParameterEvents"),
     System UMETA(DisplayName = "System"),
     UnknownQoS UMETA(DisplayName = "UnknownQoS"),
+    ActionStatus UMETA(DisplayName = "ActionStatus"),
+    Custom UMETA(DisplayName ="Custom"),
 };
 
 //! profiles provided by rclUE
@@ -139,7 +141,7 @@ static const rmw_qos_profile_t rclUE_qos_profile_clock_pub = {RMW_QOS_POLICY_HIS
 
 //! profiles provided by rclUE
 static const rmw_qos_profile_t rclUE_qos_profile_dynamic_broadcaster = {RMW_QOS_POLICY_HISTORY_KEEP_LAST,
-                                                                        100,
+                                                                        1000,
                                                                         RMW_QOS_POLICY_RELIABILITY_RELIABLE,
                                                                         RMW_QOS_POLICY_DURABILITY_VOLATILE,
                                                                         RMW_QOS_DEADLINE_DEFAULT,
@@ -159,6 +161,28 @@ static const rmw_qos_profile_t rclUE_qos_profile_static_broadcaster = {RMW_QOS_P
                                                                        RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT,
                                                                        false};
 
+static const rmw_qos_profile_t rclUE_qos_profile_action_status = {
+    RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+    10,
+    RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+    RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+    RMW_QOS_DEADLINE_DEFAULT,
+    RMW_QOS_LIFESPAN_DEFAULT,
+    RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT,
+    RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT,
+    false
+};
+
+static const rmw_qos_profile_t rclUE_qos_profile_custom = {RMW_QOS_POLICY_HISTORY_KEEP_ALL,
+                                                                        10000000,
+                                                                        RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+                                                                        RMW_QOS_POLICY_DURABILITY_VOLATILE,
+                                                                        RMW_QOS_DEADLINE_DEFAULT,
+                                                                        RMW_QOS_LIFESPAN_DEFAULT,
+                                                                        RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT,
+                                                                        RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT,
+                                                                        false};
+
 //! Look-Up Table matching enum with rcl profiles
 static const TMap<UROS2QoS, rmw_qos_profile_t> QoS_LUT = {{UROS2QoS::Default, rmw_qos_profile_default},
                                                           {UROS2QoS::SensorData, rclUE_qos_profile_sensor_data},
@@ -170,7 +194,9 @@ static const TMap<UROS2QoS, rmw_qos_profile_t> QoS_LUT = {{UROS2QoS::Default, rm
                                                           {UROS2QoS::Services, rmw_qos_profile_services_default},
                                                           {UROS2QoS::ParameterEvents, rmw_qos_profile_parameter_events},
                                                           {UROS2QoS::System, rmw_qos_profile_system_default},
-                                                          {UROS2QoS::UnknownQoS, rmw_qos_profile_unknown}};
+                                                          {UROS2QoS::UnknownQoS, rmw_qos_profile_unknown},
+                                                          {UROS2QoS::ActionStatus, rclUE_qos_profile_action_status},
+                                                                {UROS2QoS::Custom, rclUE_qos_profile_custom}};
 
 /**
  * @brief Custom timer manager.  This try to execute delegate at a given fixed rate.
@@ -180,6 +206,7 @@ UCLASS()
 class URRTimerManager : public UObject
 {
     GENERATED_BODY()
+
 public:
     FString LogInfo;
 
@@ -258,8 +285,8 @@ public:
                 LogTemp,
                 Warning,
                 TEXT("[URRTimerManager::SetTimerImple][%s] Delegate function call take longer than Rate or StepSize is not "
-                     "small enough to meet target Rate=%f, "
-                     "StepSize=%f."),
+                    "small enough to meet target Rate=%f, "
+                    "StepSize=%f."),
                 *LogInfo,
                 Rate,
                 FApp::GetFixedDeltaTime());

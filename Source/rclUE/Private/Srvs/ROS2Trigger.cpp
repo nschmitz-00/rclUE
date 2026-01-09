@@ -9,19 +9,19 @@
 
 const rosidl_service_type_support_t* UROS2TriggerSrv::GetTypeSupport() const
 {
-    return ROSIDL_GET_SRV_TYPE_SUPPORT(example_interfaces, srv, Trigger);
+    return ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, Trigger);
 }
 
 void UROS2TriggerSrv::Init()
 {
-    example_interfaces__srv__Trigger_Request__init(&Trigger_req);
-    example_interfaces__srv__Trigger_Response__init(&Trigger_res);
+    std_srvs__srv__Trigger_Request__init(&Trigger_req);
+    std_srvs__srv__Trigger_Response__init(&Trigger_res);
 }
 
 void UROS2TriggerSrv::Fini()
 {
-    example_interfaces__srv__Trigger_Request__fini(&Trigger_req);
-    example_interfaces__srv__Trigger_Response__fini(&Trigger_res);
+    std_srvs__srv__Trigger_Request__fini(&Trigger_req);
+    std_srvs__srv__Trigger_Response__fini(&Trigger_res);
 }
 
 void UROS2TriggerSrv::SetRequest(const FROSTriggerReq& Request)
